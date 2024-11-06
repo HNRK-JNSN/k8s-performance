@@ -1,0 +1,73 @@
+#########################################################
+# Deployment
+#########################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weatherforecast-deployment
+spec:
+  selector:
+    matchLabels:
+      app: weatherforecast-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: weatherforecast-app
+    spec:
+      containers:
+        - name: weatherforecast-pod
+          image: hnrkjnsn/testservice:latest
+          env:
+            - name: LOKI_HOSTNAME
+              value: "http://loki-headless.grafana-loki.svc.cluster.local:3100"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=weatherforecast-service,service.namespace=default,service.version=1.0,service.instance.id=`uuidgen`,host.name=`HOSTNAME`,host.type=`uname -m`,os.name=`uname -s`,os.version=`uname -r`"
+          ports:
+            - containerPort: 8080
+
+---
+
+#########################################################
+# Service
+#########################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: weatherforecast-service
+  annotations:
+    prometheus.io/port: "metrics"
+    prometheus.io/scrape: "true"
+  labels:
+    app.kubernetes.io/part-of: dms
+spec:
+  type: ClusterIP
+  selector:
+    app: weatherforecast-app
+  ports:
+    - name: "metrics"
+      port: 8080
+---
+
+#########################################################
+# Prometheus Service Monitor
+#########################################################
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: weatherforecast-service-monitor
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: dms
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: dms
+  endpoints:
+    - interval: 15s
+      port: metrics
+---
