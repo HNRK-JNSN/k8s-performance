@@ -1,9 +1,12 @@
 #!/bin/bash
 
-for i in {1..200}
+WeatherforecastURL=http://localhost:5001/
+
+for i in {1..100}
 do 
-    echo $i
-    curl -s http://localhost:5057/weatherforecast
-    curl -s http://localhost:5057/telemetry
-    curl -s http://localhost:5057
+    echo -n "${i} - "
+    curl $WeatherforecastURL/weatherforecast
+    curl $WeatherforecastURL/telemetry
+    curl $WeatherforecastURL/version
+    echo ""
 done
