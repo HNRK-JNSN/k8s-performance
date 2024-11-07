@@ -43,7 +43,7 @@ Fra folderen `Minikube-Env` kør kommandoen:
 Fra folderen `Minikube-Env` kør kommandoen:
 
 ```bash
- $ helm upgrade --install --values lokigrafana.yaml loki grafana/loki-stack -n monitoring --create-namespace
+  $ helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --values prometheus.yaml --create-namespace
 ```
 
 ## Tjek installationen
