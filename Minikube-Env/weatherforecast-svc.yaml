@@ -1,4 +1,18 @@
 #########################################################
+# Secrets
+#########################################################
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-credentials
+type: Opaque
+data:
+  user: ZGVmYXVsdA==
+  password: Y284ZU1wbFdqRw==
+
+---
+
+#########################################################
 # Deployment
 #########################################################
 apiVersion: apps/v1
@@ -18,7 +32,20 @@ spec:
       containers:
         - name: weatherforecast-pod
           image: hnrkjnsn/testservice:latest
+          imagePullPolicy: Always
           env:
+            - name: RedisConnectionString
+              value: "my-release-redis-master.default.svc.cluster.local:6379"
+            - name: REDISUSER
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: user
+            - name: REDISPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
             - name: LOKI_HOSTNAME
               value: "http://loki-headless.grafana-loki.svc.cluster.local:3100"
             - name: OTEL_RESOURCE_ATTRIBUTES
