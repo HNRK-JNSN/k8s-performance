@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using NLog;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using StackExchange.Redis;
 using NRedisStack;
 
@@ -13,11 +14,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Create a service to expose ActivitySource, and Metric Instruments
+// for manual instrumentation
+builder.Services.AddSingleton<Instrumentation>();
+
 // Add OpenTelemetry services
 builder.Services.AddOpenTelemetry()
     .WithMetrics(builder =>
     {
         builder.AddPrometheusExporter();
+        
+        builder.AddMeter(Instrumentation.MeterName);
 
         builder.AddMeter("Microsoft.AspNetCore.Hosting",
                          "Microsoft.AspNetCore.Server.Kestrel");
@@ -26,12 +33,16 @@ builder.Services.AddOpenTelemetry()
             {
                 Boundaries = new double[] { 0, 0.005, 0.01, 0.025, 0.05,
                        0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
-            });
+            });       
+
     });
+
+var connectionstring = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+logger.Info("Using Redis connectionstring: {0}", connectionstring);
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.Configuration = connectionstring;
     options.InstanceName = "TestServer_";
 });
 
@@ -62,7 +73,8 @@ app.MapGet("/telemetry", () => "OpenTelemetry! ticks:"
 app.MapGet("/version", () => new Dictionary<string, string>
 {
     { "service", "Weather Forecast" },
-    { "version", typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown" },
+    { "file version", FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).FileVersion ?? "unknown" },
+    { "product version", FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion ?? "unknown" },
     { "ip-address", System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName())[0].MapToIPv4().ToString() }
 });
 
