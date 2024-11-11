@@ -1,7 +1,7 @@
 
 services:
   weather-service:
-    image: hnrkjnsn/testservice:latest
+    image: hnrkjnsn/testservice:0.4.0
     build:
       context: ../TestService
       dockerfile: ../TestService/Dockerfile
@@ -12,3 +12,13 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES="service.name=resource-tutorial-dotnet,service.namespace=tutorial,service.version=1.0,service.instance.id=`uuidgen`,host.name=`HOSTNAME`,host.type=`uname -m`,os.name=`uname -s`,os.version=`uname -r`"
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
+
+  redis-cache:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

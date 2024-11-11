@@ -17,11 +17,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.10" />
     <PackageReference Include="NLog" Version="5.3.4" />
     <PackageReference Include="NLog.extensions.hosting" Version="5.3.14" />
     <PackageReference Include="NLog.extensions.logging" Version="5.3.14" />
     <PackageReference Include="NLog.Targets.Loki" Version="2.2.0" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.14" />
+    <PackageReference Include="NRedisStack" Version="0.13.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.9.0-beta.2" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />

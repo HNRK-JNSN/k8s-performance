@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using NLog;
 using OpenTelemetry.Metrics;
+using StackExchange.Redis;
+using NRedisStack;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromFile().GetCurrentClassLogger();
 logger.Info("Starting Test Weather Service ...");
@@ -27,6 +29,14 @@ builder.Services.AddOpenTelemetry()
             });
     });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.InstanceName = "TestServer_";
+});
+
+builder.Services.AddSingleton<WeatherforecastAPI>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -40,28 +50,9 @@ app.UseHttpsRedirection();
 
 app.MapPrometheusScrapingEndpoint();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-
 app.MapGet("/", () => "Welcome to the Weatherforecast Service");
 
-app.MapGet("/weatherforecast", () =>
-{
-    logger.Info("GetWeatherForecast called");
-
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
+app.MapGet("/weatherforecast", async (WeatherforecastAPI api) => await api.GetWeatherForecastAsync())
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
@@ -78,8 +69,3 @@ app.MapGet("/version", () => new Dictionary<string, string>
 logger.Info("WeatherForecast service started");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
