@@ -37,12 +37,21 @@ builder.Services.AddOpenTelemetry()
 
     });
 
-var connectionstring = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
-logger.Info("Using Redis connectionstring: {0}", connectionstring);
+var redisendpoint = builder.Configuration["RedisConnectionString"] ?? "localhost:6379";
+logger.Info("Using Redis adress: {0}", redisendpoint);
+
+var password = builder.Configuration["REDISPASSWORD"] ?? "";
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = connectionstring;
+    var configOptions = new ConfigurationOptions
+    {
+        EndPoints = { redisendpoint },
+        Password = password,
+        ConnectTimeout = 5000,
+        SyncTimeout = 5000
+    };   
+    options.ConfigurationOptions = configOptions;
     options.InstanceName = "TestServer_";
 });
 
