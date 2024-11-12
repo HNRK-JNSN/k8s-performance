@@ -95,7 +95,8 @@ Med en browser, test at du kan tilgå den viste URL. Kig evt. i koden for servic
 1) For at tilføje en Redis cacheserver til løsningen skal du installer den med følgende Helm Chart:
   
    ```bash
-   $ helm install my-release oci://registry-1.docker.io/bitnamicharts/redis
+   $ helm install testserver -n caching --create-namespace \
+         oci://registry-1.docker.io/bitnamicharts/redis
    ```
 
 2) Følg instrukserne fra installationsscriptet:
@@ -112,7 +113,7 @@ Med en browser, test at du kan tilgå den viste URL. Kig evt. i koden for servic
 
    ```yaml
       env:
-      - name:  
+      - name: RedisConnectionString
         value: "my-release-redis-master.default.svc.cluster.local:6379"
    ```
 

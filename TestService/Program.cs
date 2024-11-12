@@ -37,8 +37,8 @@ builder.Services.AddOpenTelemetry()
 
     });
 
-var redisendpoint = builder.Configuration["RedisConnectionString"] ?? "localhost:6379";
-logger.Info("Using Redis adress: {0}", redisendpoint);
+var redisEndpoint = builder.Configuration["RedisConnectionString"] ?? "localhost:6379";
+logger.Info("Using Redis adress: {0}", redisEndpoint);
 
 var password = builder.Configuration["REDISPASSWORD"] ?? "";
 
@@ -46,7 +46,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     var configOptions = new ConfigurationOptions
     {
-        EndPoints = { redisendpoint },
+        EndPoints = { redisEndpoint },
         Password = password,
         ConnectTimeout = 5000,
         SyncTimeout = 5000
